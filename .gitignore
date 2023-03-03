@@ -13,3 +13,7 @@
 !workflow/envs/*
 !workflow/rules/*
 !docs/*
+!mkdocs.yml
+!.readthedocs.yaml
+!docs/images
+!docs/images/*
