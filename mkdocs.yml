@@ -3,6 +3,7 @@ site_url: https://example.come/
 nav:
   - Introduction: index.md
   - Running bam2bakR: deploy.md
+  - Providing fastqs as input: fastq.md
   - Output: output.md
   - Making Tracks: tracks.md
   - Alternative deployment strategies: alt.md

@@ -1,6 +1,8 @@
 ## Setup
 
-There are 4 steps required to get up and running with bam2bakR:
+Despite its name, bam2bakR is also able to take fastq files as input, trimming and aligning them before running them through the standard bam2bakR pipeline. The current implementation of this is a bit rough around the edges and inflexible though. For aligning fastq files to create bam files that can be passed to bam2bakR, I will shamelessly suggest my own Snakemake pipeline called [THE_Aligner](https://github.com/isaacvock/THE_Aligner) which implements a number of different aligners, makes use of automated unit testing, is more configurable, and includes QC of fastqs and output bam files that bam2bakR does not currently implement. A new and improved version of the full fastq-to-cB file pipeline implemented in bam2bakR is currently under development at [fastq2EZbakR](https://github.com/isaacvock/fastq2EZbakR), and is almost fully operational (as of 11/29/2023; pipeline is fully implemented, in the process of running several test datasets). Documentation for bam2bakR's fastq processing strategy is included here for posterity's sake.
+
+The steps for making use of bam2bakR's fastq processing functionality are pretty much identical to those for using bam files as input, but I will reproduce those steps here in their entirety for convenience sake. The main difference is that there are now additional parameters in the config to make note of. The steps are:
 
 1. [Install conda (or mamba) on your system](#conda). This is the package manager that bam2bakR uses to make setting up the necessary dependencies a breeze.
 1. [Deploy workflow](#deploy) with [Snakedeploy](https://snakedeploy.readthedocs.io/en/latest/index.html)
@@ -69,29 +71,32 @@ snakedeploy deploy-workflow https://github.com/simonlabcode/bam2bakR.git . --bra
 `snakedeploy deploy-workflow https://github.com/simonlabcode/bam2bakR.git` copies the content of the `config` directory in the bam2bakR Github repo into the directoy specified (`.`, which means current directory, i.e., `workdir` in this example). It also creates a directory called `workflow` that contains a singular Snakefile that instructs Snakemake to use the workflow hosted on the main branch (that is what `--branch main` determines) of the bam2bakR Github repo. `--branch main` can also be replaced with `--tag 1.0.2` to ensure that you are consistently using the same version of bam2bakR (version 1.0.2 release).
 
 ### Edit the config file<a name="config"></a>
+
+**!!This is the part that differs from the standard bam-file input deployment!!**
+
 In the `config/` directory you will find a file named `config.yaml`. If you open it in a text editor, you will see several parameters which you can alter to your heart's content. The first parameter that you have to set is at the top of the file:
 
 ``` yaml
 samples:
-  WT_1: data/samples/WT_replicate_1.bam
-  WT_2: data/samples/WT_replicate_2.bam
-  WT_ctl: data/samples/WT_nos4U.bam
-  KO_1: data/samples/KO_replicate_1.bam
-  KO_2: data/samples/KO_replicate_2.bam
-  KO_ctl: data/samples/KO_nos4U.bam
+  WT_1: data/fastq/WT_1
+  WT_2: data/fastq/WT_2
+  WT_ctl: data/fastq/WT_ctl
+  KO_1: data/fastq/KO_1
+  KO_2: data/fastq/KO_2
+  KO_ctl: data/fastq/KO_ctl
 ```
-`samples` is the list of sample IDs and paths to .bam files that you want to process. Delete the existing sample names and paths and add yours. The sample names in this example are `WT_1`, `WT_2`, `WT_ctl`, `KO_1`, `KO_2`, and `KO_ctl`. These are the sample names that will show up in the `sample` column of the output cB.csv file. The `:` is necessary to distinguish the sample name from what follows, the path to the relevant bam file. Note, the path is NOT an absolute path, it is relative to the directory that you deployed to (i.e., `workdir` in this example). Thus, in this example, the bam files are located in a directory called `samples` that is inside of a directory called `data` located in `workdir`. Your data can be wherever you want it to be, but it might be easiest if you put it in a `data` directory inside the bam2bakR directory as in this example. 
+`samples` is the list of sample IDs and paths to directory containing .fastq files that you want to process. **NOTE: each directory must contain a single fastq file or pair of fastq files**.  Delete the existing sample names and paths and add yours. The sample names in this example are `WT_1`, `WT_2`, `WT_ctl`, `KO_1`, `KO_2`, and `KO_ctl`. These are the sample names that will show up in the `sample` column of the output cB.csv file. The `:` is necessary to distinguish the sample name from what follows, the path to the relevant bam file. Note, the path is NOT an absolute path, it is relative to the directory that you deployed to (i.e., `workdir` in this example). Thus, in this example, the fastq file-containing directories are located in a directory called `fastq` that is inside of a directory called `data` located in `workdir`. Your data can be wherever you want it to be, but it might be easiest if you put it in a `data` directory inside the bam2bakR directory as in this example. 
 
 As another example, imagine that the `data` directory was in the directory that contains `workdir`, and that there was no `samples` subdirectory inside of `data`. In that case, the paths would look something like this:
 
 ``` yaml
 samples:
-  WT_1: ../data/WT_replicate_1.bam
-  WT_2: ../data/WT_replicate_2.bam
-  WT_ctl: ../data/WT_nos4U.bam
-  KO_1: ../data/KO_replicate_1.bam
-  KO_2: ../data/KO_replicate_2.bam
-  KO_ctl: ../data/KO_nos4U.bam
+  WT_1: ../data/WT_1
+  WT_2: ../data/WT_2
+  WT_ctl: ../data/WT_ctl
+  KO_1: ../data/KO_1
+  KO_2: ../data/KO_2
+  KO_ctl: ../data/KO_ctl
 ```
 where `../` means navigate up one directory. 
 
@@ -126,6 +131,10 @@ The other parameters that can be altered are:
 * `spikename`: If spike-ins are present, this should be a string that is common to all gene_ids for spike-in transcripts in annotation gtf. For example, in Ensembl annotations for Drosophila melanogaster, all gene_ids start with "FBgn". Therefore, if you have Drosophila spike-ins, `spikename` should be "FBgn".
 * `normalize`: If True, then scale factor calculated with edgeR is used to normalize sequencing tracks.
 * `WSL`: whether you are running this on the Windows subsystem for linux (0 = yes; 1= no)
+
+Configurable parameters that uniquely impact the fastq processing are:
+
+
 
  
 Edit the values in the config file as necessary and move on to the last step.
