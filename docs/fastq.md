@@ -134,6 +134,21 @@ The other parameters that can be altered are:
 
 Configurable parameters that uniquely impact the fastq processing are:
 
+* `HISAT2`: Path to directory containing hisat2 indices. These must be pre-built by the user. See [here](https://daehwankimlab.github.io/hisat2/manual/) for details.
+* `HISAT_3N`: Path to directory containing hisat-3n indices. These must be pre-built by the user. See [here](https://daehwankimlab.github.io/hisat2/hisat-3n/) for details.
+* `STAR_index`: Path to directory containing STAR indices. These can be created by the pipeline if `build_star` is set to True. They will be created at the directory specified by `STAR_index`.
+* `use_hisat3n`: If True, HISAT-3N will be used for alignment.
+* `use_star`: If True, and `use_hisat3n` is False, STAR will be used for alignment. If both `use_hisat3n` and `use_star` are false, then HISAT2 will be used.
+* `build_star`: If True, STAR indices will be built automatically at path specified in `STAR_index` if not provided by user.
+* `hisat3n_path`: Path to HISAT-3N executable; HISAT-3N cannot be installed automatically like all other dependencies as it is not installable via conda.
+* `chr_tag`: If True, chr is added to chromosome names during alignment (HISAT2 and HISAT-3N only). Useful when aligner index is number-based but annotation file has "chr" in its seqnames.
+* `Yale`: If True, HISAT-3N can be loaded as a module available on the McCleary cluster. Otherwise, HISAT-3N must be installed manaully by the user and the path to the exectuable provided.
+* `flattened`: This parameter should be kept to False unless you know what you are doing.
+* `adapter`: Code snippet that is passed to [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) for adapter trimming.
+* `cutadapt_extra`: Extra, optional parameters passed to Cutadapt.
+* `star_extra`: Extra, optional parameters passed to STAR for alignment.
+* `hisat2_extra`: Extra, optional parameters passed to HISAT2 for alignment.
+
 
 
  
