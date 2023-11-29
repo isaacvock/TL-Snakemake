@@ -33,7 +33,7 @@ Finally, bam2bakR requires bam files from stranded library preps (i.e., informat
 
 There are a number of ways to use bam2bakR:
 
-1. [Deploying with Snakedeploy](deploy.md) (recommended)
+1. [Deploying with Snakedeploy](deploy.md) (recommended); see [here](fastq.md) for instructions specific to providing fastqs as input rather than bam file as input
 1. [Cloning the repo locally](alt.md); there are several possible variants of this option:
     * Running with --use-conda option
     * Running within full environment
